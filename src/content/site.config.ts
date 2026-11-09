@@ -16,7 +16,7 @@ export const SITE_CONFIG = {
   },
   // Full profile URLs. Empty = icon shows dimmed with a "Coming soon" tooltip and doesn't link.
   socials: {
-    instagram: "",
+    instagram: "https://www.instagram.com/hinacho.web/",
     tiktok: "",
   },
   // Paths without extension; run `node scripts/media.mjs` after adding files to assets/me/
