@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0B1938;
+  --color-indigo: #152746;
+  --color-cotton: #EAE7DA;
+  --color-muted: #8A97AE;
+  --color-faded: #435368;
+  --color-terracotta: #D2643C;
+  --color-danfo: #F7C21B;
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --ease-dye: cubic-bezier(.22, 1, .36, 1);
+  --ease-cloth: cubic-bezier(.65, 0, .35, 1);
+}
+
+:root { --line: rgba(234, 231, 218, .08); color-scheme: dark; }
+html { background: var(--color-ink); color: var(--color-cotton); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+.label { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); }
+
+/* ---------- motion utilities ---------- */
+@property --dye { syntax: "<percentage>"; inherits: true; initial-value: 120%; }
+.dye-css { --dye: 120%; animation: dye-in 1.2s cubic-bezier(.65,0,.35,1) forwards;
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 calc(var(--dye) - 14%), transparent var(--dye));
+          mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, #000 calc(var(--dye) - 14%), transparent var(--dye)); }
+.dye-css-fringe { background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent calc(var(--dye) - 16%), rgba(11,25,56,.9) calc(var(--dye) - 2%)); }
+@keyframes dye-in { to { --dye: -16%; } }
+
+.loader-stroke { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw .55s cubic-bezier(.22,1,.36,1) forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+.stitch rect { stroke-dashoffset: 100; opacity: 0; transition: stroke-dashoffset .9s var(--ease-dye), opacity .3s; stroke-dasharray: 4 3 6 2.5 3.5 3; }
+.stitch-host:hover .stitch rect, .stitch-host:focus-visible .stitch rect { stroke-dashoffset: 0; opacity: .7; }
+.stitch-host:focus-visible { outline: 2px solid var(--color-terracotta); outline-offset: 4px; }
+
+/* living cloth: a slow, GPU-only breathe (transform only) */
+.band-breeze { animation: breeze 9s ease-in-out infinite; transform-origin: 50% 50%; }
+@keyframes breeze { 0%,100% { transform: skewX(0deg) scaleY(1); } 33% { transform: skewX(.6deg) scaleY(1.04); } 66% { transform: skewX(-.4deg) scaleY(.98); } }
+.loom-strip { animation: loom 60s linear infinite; }
+@keyframes loom { to { transform: translateX(-50%); } }
+
+.link-underline { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size .45s var(--ease-dye); padding-bottom: 2px; }
+.link-underline:hover { background-size: 100% 1px; }
+.nav-link { position: relative; }
+
+.has-cursor, .has-cursor a, .has-cursor button { cursor: none; }
+.has-cursor canvas.cursor-grab { cursor: none; }
+
+::selection { background: var(--color-terracotta); color: var(--color-ink); }
+:focus-visible { outline: 2px solid var(--color-terracotta); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .band-breeze { animation: none; }
+  .loom-strip, .loader-stroke { animation: none; stroke-dashoffset: 0; }
+  *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Selected work hover line: ragged top edge like the cut end of cloth */
+.cloth-line { clip-path: polygon(0 14px, 6% 6px, 13% 12px, 21% 4px, 30% 11px, 38% 5px, 47% 12px, 55% 3px, 63% 10px, 72% 5px, 80% 12px, 88% 4px, 95% 10px, 100% 6px, 100% 100%, 0 100%); }
+
+/* About band portrait: the photo melts into #0B1938 on every side.
+   The mask sits on the image layer itself ([data-zoom]), so the fades are measured from the photo's own
+   edges and its top/bottom can never show a line. Three layers, composited bottom-up:
+     horizontal (long left fade + light right fade)  ∩  vertical (top 18%, bottom 22%)  ∪  face ellipse.
+   The face ellipse keeps forehead → chin, glasses and smile fully opaque at every crop. */
+.about-portrait { background: transparent; }
+.about-portrait img { object-position: 72% 26%; }
+.about-portrait [data-zoom] {
+  --face: radial-gradient(ellipse 20% 25% at 72% 33%, #000 72%, transparent 100%);
+  --v: linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%);
+  --h: linear-gradient(to right, transparent 0%, rgba(0,0,0,.4) 12%, #000 34%, #000 94%, transparent 100%);
+  -webkit-mask-image: var(--face), var(--v), var(--h);
+  -webkit-mask-composite: source-over, source-in;
+          mask-image: var(--face), var(--v), var(--h);
+          mask-composite: add, intersect;
+}
+/* very subtle vignette in the background colour, inside the masked layer */
+.about-portrait [data-zoom]::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 75% 70% at 70% 40%, transparent 55%, rgba(11,25,56,.25) 100%); }
+@media (min-width: 640px) { .about-portrait img { object-position: 72% 30%; } }
+@media (min-width: 1024px) {
+  .about-portrait img { object-position: 78% 30%; }
+  .about-portrait [data-zoom] {
+    --face: radial-gradient(ellipse 16% 26% at 70% 33%, #000 72%, transparent 100%);
+    --h: linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 18%, #000 46%, #000 94%, transparent 100%);
+  }
+}
+
+/* Nav when scrolled. Default "bar" (set on <html> in layout.tsx): solid full-width #0B1938 bar with blur,
+   so nothing shows through or around the pill. Alternative "pill": only the pill turns solid. */
+html[data-navstyle="pill"] .site-header[data-solid="true"] nav { background-color: #0B1938; }
+html[data-navstyle="bar"] .site-header[data-solid="true"] { top: 0; padding-top: 12px; padding-bottom: 12px; background-color: rgba(11, 25, 56, .94); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+@media (min-width: 768px) { html[data-navstyle="bar"] .site-header[data-solid="true"] { padding-top: 16px; padding-bottom: 16px; } }
+html[data-navstyle="bar"] .site-header[data-solid="true"] nav { background-color: #0B1938; }
+
+/* About page framed portrait */
+.about-field {
+  opacity: .42;
+  -webkit-mask-image: radial-gradient(ellipse 55% 60% at 62% 50%, #000 35%, transparent 100%);
+          mask-image: radial-gradient(ellipse 55% 60% at 62% 50%, #000 35%, transparent 100%);
+}
+/* indigo grade: strongest on the bright background, none on the face (face ≈ 59% x, 40% y of the card) */
+.portrait-grade .grade-multiply, .portrait-grade .grade-color {
+  -webkit-mask-image: radial-gradient(ellipse 36% 32% at 59% 42%, transparent 55%, #000 100%);
+          mask-image: radial-gradient(ellipse 36% 32% at 59% 42%, transparent 55%, #000 100%);
+}
+.portrait-grade .grade-multiply { opacity: .5; }
+.portrait-grade .grade-color { opacity: .22; }
+
+/* decorative layers may bleed past the viewport edge; never allow sideways scroll */
+#main { overflow-x: clip; }
+
+/* About page "at work" band: face ≈ 78% x, 30% y in the photo */
+.atwork-frame img { object-position: 80% 30%; }
+@media (min-width: 640px) { .atwork-frame img { object-position: 78% 30%; } }
+@media (min-width: 768px) { .atwork-frame img { object-position: 50% 28%; } }
+/* soft top/bottom fades into #0B1938 (union with a face oval so the face never fades) */
+.atwork-mask {
+  --face: radial-gradient(ellipse 14% 24% at 78% 32%, #000 70%, transparent 100%);
+  --v: linear-gradient(to bottom, transparent 0%, #000 16%, #000 78%, transparent 100%);
+  -webkit-mask-image: var(--face), var(--v);
+  -webkit-mask-composite: source-over;
+          mask-image: var(--face), var(--v);
+          mask-composite: add;
+}
+@media (max-width: 767px) { .atwork-mask { --face: radial-gradient(ellipse 30% 22% at 72% 34%, #000 70%, transparent 100%); } }
+.atwork-grade {
+  -webkit-mask-image: radial-gradient(ellipse 16% 26% at 78% 32%, transparent 55%, #000 100%);
+          mask-image: radial-gradient(ellipse 16% 26% at 78% 32%, transparent 55%, #000 100%);
+}
+@media (max-width: 767px) { .atwork-grade { -webkit-mask-image: radial-gradient(ellipse 32% 24% at 72% 34%, transparent 55%, #000 100%); mask-image: radial-gradient(ellipse 32% 24% at 72% 34%, transparent 55%, #000 100%); } }
+
+/* nav height (scrolled bar: 16 + 56 + 16); used for hero offsets and scroll-margin */
+:root { --nav-h: 80px; }
+@media (min-width: 768px) { :root { --nav-h: 88px; } }
+/* case-study hero column: max 1160px, ≥7vw side margins on desktop */
+.case-col { margin-inline: auto; width: calc(100% - 32px); }
+@media (min-width: 768px) { .case-col { width: min(1160px, calc(100% - 14vw)); } }
